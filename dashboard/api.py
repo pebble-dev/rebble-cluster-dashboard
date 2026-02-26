@@ -61,7 +61,11 @@ def pods_dict():
                 restart_age = mk_dt(datetime.now(timezone.utc)-c.last_state.terminated.finished_at)
                 restart_cause = c.last_state.terminated.reason
     
-        svc,deployment,pid = i.metadata.name.rsplit("-", 2)
+        try:
+            svc,deployment,pid = i.metadata.name.rsplit("-", 2)
+        except:
+            svc,deployment,pid = i.metadata.name,"",""
+
         if svc not in svcs:
             svcs[svc] = {}
         if deployment not in svcs[svc]:
