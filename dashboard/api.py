@@ -2,6 +2,7 @@ from datetime import *
 
 from flask import Blueprint, request, jsonify, abort, url_for, make_response
 from flask_cors import CORS
+from flask_caching import Cache
 
 from kubernetes import client, config
 
@@ -15,6 +16,7 @@ parent_app = None
 api = Blueprint('api', __name__)
 CORS(api)
 
+cache = Cache()
 
 def mk_dt(dt):
     if isinstance(dt, timedelta):
@@ -39,6 +41,7 @@ def mk_dt(dt):
     return "".join(times[:2])
 
 
+@cache.cached(timeout=5, key_prefix="pods_dict")
 def pods_dict():
     ret = kube.list_namespaced_pod('default', watch=False)
 
