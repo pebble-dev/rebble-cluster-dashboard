@@ -5,7 +5,10 @@ from flask_cors import CORS
 
 from kubernetes import client, config
 
-config.load_kube_config()
+try:
+    config.load_kube_config()
+except:
+    config.load_incluster_config()
 kube = client.CoreV1Api()
 
 parent_app = None
