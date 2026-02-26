@@ -7,4 +7,6 @@ config = {
     'DOMAIN_ROOT': domain_root,
     'SECRET_KEY': os.environ.get('SECRET_KEY'),
     'HONEYCOMB_KEY': os.environ.get('HONEYCOMB_KEY', None),
+    'CACHE_TYPE': 'SimpleCache',
+    'CACHE_DEFAULT_TIMEOUT': 300,
 }
