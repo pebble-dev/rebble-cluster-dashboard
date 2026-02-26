@@ -1,6 +1,6 @@
 from datetime import *
 
-from flask import Blueprint, request, jsonify, abort, url_for, make_response
+from flask import Blueprint, request, jsonify, abort, url_for, Response
 from flask_cors import CORS
 from flask_caching import Cache
 
@@ -105,7 +105,7 @@ def pods():
                 if detail['restarts']:
                     lines.append(f"      {detail['restarts']} restarts; most recent was {detail['restart_cause']}, {detail['restart_age']} ago")
     
-    return "\n".join(lines)
+    return Response("\n".join(lines), mimetype='text/plain')
 
 
 def init_app(app, url_prefix='/api/v1'):
