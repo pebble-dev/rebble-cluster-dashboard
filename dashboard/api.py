@@ -49,20 +49,27 @@ def pods_dict():
 
     for i in ret.items:
         restarts = 0
-        containers = len(i.status.container_statuses)
+        
+        # container_statuses can be None, per
+        # https://github.com/kubernetes-client/python/blob/master/kubernetes/docs/V1PodStatus.md
+        # -- we've seen this happen when a pod is in an early phase, which
+        # causes the dashboard to 500 (!)
+        n_containers = len(i.status.container_statuses) if i.status.container_statuses else -1
+        
         ready = 0
         started = 0
         restart_age = None
         restart_cause = None
-        for c in i.status.container_statuses:
-            if c.ready:
-                ready += 1
-            if c.started:
-                started += 1
-            restarts += c.restart_count
-            if c.last_state.terminated:
-                restart_age = mk_dt(datetime.now(timezone.utc)-c.last_state.terminated.finished_at)
-                restart_cause = c.last_state.terminated.reason
+        if i.status.container_statuses:
+            for c in i.status.container_statuses:
+                if c.ready:
+                    ready += 1
+                if c.started:
+                    started += 1
+                restarts += c.restart_count
+                if c.last_state.terminated:
+                    restart_age = mk_dt(datetime.now(timezone.utc)-c.last_state.terminated.finished_at)
+                    restart_cause = c.last_state.terminated.reason
     
         try:
             svc,deployment,pid = i.metadata.name.rsplit("-", 2)
@@ -76,8 +83,9 @@ def pods_dict():
         svcs[svc][deployment][pid] = {
             "age": mk_dt(datetime.now(timezone.utc)-i.status.start_time),
             "phase": i.status.phase,
+            "phase_message": i.status.message,
             "ready": ready,
-            "containers": containers,
+            "containers": n_containers,
             "restarts": restarts,
             "restart_age": restart_age,
             "restart_cause": restart_cause
